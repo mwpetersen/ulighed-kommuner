@@ -144,3 +144,12 @@ df_n_lavindkomst_kommuner = ds_n_lavindkomst_kommuner.write('dataframe', naming 
 df_folketal_tekst = ds_folketal.write('dataframe', naming = 'label')
 df_folketal_kode = ds_folketal.write('dataframe', naming = 'id')
 df_folketal_tekst['kommune_id'] = df_folketal_kode['OMRÅDE']
+
+# Data wrangling
+
+df_folketal = (df_folketal_tekst
+   .loc[:, ["område", "kommune_id"]]
+   .drop_duplicates(subset = ["område", "kommune_id"])
+   .loc[df_folketal_tekst["område"] != "Hele landet"]
+   .loc[~df_folketal_tekst["område"].str.contains("Region"), :]
+)
