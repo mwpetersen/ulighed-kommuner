@@ -147,9 +147,28 @@ df_folketal_tekst['kommune_id'] = df_folketal_kode['OMRÅDE']
 
 # Data wrangling
 
-df_folketal = (df_folketal_tekst
-   .loc[:, ["område", "kommune_id"]]
-   .drop_duplicates(subset = ["område", "kommune_id"])
-   .loc[df_folketal_tekst["område"] != "Hele landet"]
-   .loc[~df_folketal_tekst["område"].str.contains("Region"), :]
+kun_kommuner = df_folketal_tekst["område"] != "Hele landet"
+regioner = df_folketal_tekst["område"].map(lambda x: x.startswith('Region'))
+
+df_kommuner = (df_folketal_tekst
+   .loc[(kun_kommuner) & (~regioner), ["område", "kommune_id"]]
+   .drop_duplicates()
+)
+
+df_kommuner_folketal = (df_folketal_tekst
+   .loc[(kun_kommuner) & (~regioner), ["tid", "value", "kommune_id"]]
+   .assign(år = lambda x: x.tid.str.slice(stop = 4),
+           kvartal = lambda x: x.tid.str.slice(start = 4))
+   .query('kvartal not in ["K2", "K3", "K4"]')
+   .loc[:, ["kommune_id", "år", "kvartal", "value"]]
+   .rename(columns = {'value': 'folketal'})
+)
+
+
+df_kommuner_g_indkomst = (df_indkomst_kommuner
+   .rename(columns = {'KOMMUNEDK': 'kommune_id',
+                      'Tid': 'år',
+                      'DECILGEN': 'decil_gruppe',
+                      'value': 'g_indkomst'})
+   .loc[:, ["kommune_id", "år", "decil_gruppe", "g_indkomst"]]
 )
