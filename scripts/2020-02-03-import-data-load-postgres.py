@@ -143,27 +143,28 @@ df_n_lavindkomst_kommuner = ds_n_lavindkomst_kommuner.write('dataframe', naming 
 
 df_folketal_tekst = ds_folketal.write('dataframe', naming = 'label')
 df_folketal_kode = ds_folketal.write('dataframe', naming = 'id')
-df_folketal_tekst['kommune_id'] = df_folketal_kode['OMRÅDE']
+df_folketal_tekst['id'] = df_folketal_kode['OMRÅDE']
 
-# Data wrangling
+# Data cleaning and wrangling
 
 kun_kommuner = df_folketal_tekst["område"] != "Hele landet"
 regioner = df_folketal_tekst["område"].map(lambda x: x.startswith('Region'))
 
 df_kommuner = (df_folketal_tekst
-   .loc[(kun_kommuner) & (~regioner), ["område", "kommune_id"]]
+   .loc[(kun_kommuner) & (~regioner), ["område", "id"]]
    .drop_duplicates()
+   .rename(columns = {'område': 'kommune'})
 )
 
 df_kommuner_folketal = (df_folketal_tekst
-   .loc[(kun_kommuner) & (~regioner), ["tid", "value", "kommune_id"]]
+   .loc[(kun_kommuner) & (~regioner), ["tid", "value", "id"]]
    .assign(år = lambda x: x.tid.str.slice(stop = 4),
            kvartal = lambda x: x.tid.str.slice(start = 4))
    .query('kvartal not in ["K2", "K3", "K4"]')
-   .loc[:, ["kommune_id", "år", "kvartal", "value"]]
-   .rename(columns = {'value': 'folketal'})
+   .loc[:, ["id", "år", "kvartal", "value"]]
+   .rename(columns = {'value': 'folketal',
+                      'id': 'kommune_id'})
 )
-
 
 df_kommuner_g_indkomst = (df_indkomst_kommuner
    .rename(columns = {'KOMMUNEDK': 'kommune_id',
@@ -171,4 +172,21 @@ df_kommuner_g_indkomst = (df_indkomst_kommuner
                       'DECILGEN': 'decil_gruppe',
                       'value': 'g_indkomst'})
    .loc[:, ["kommune_id", "år", "decil_gruppe", "g_indkomst"]]
+)
+
+df_kommuner_g_indkomst = (pd.merge(df_kommuner_g_indkomst, df_kommuner, 
+        left_on = 'kommune_id', right_on = 'id')
+       .loc[:, ["kommune_id", "år", "decil_gruppe", "g_indkomst"]]
+)
+
+kommuner_g_lavindkomst = (df_n_lavindkomst_kommuner
+   .loc[:, ["KOMMUNEDK", "Tid", "value"]]
+   .merge(df_pct_lavindkomst_kommuner, on = ['KOMMUNEDK', 'Tid'])
+   .merge(df_kommuner, left_on = 'KOMMUNEDK', right_on = 'id')
+   .loc[:, ["id", "Tid", "INDKN", "value_x", "value_y"]]
+   .rename(columns = {'id': 'kommune_id',
+                      'Tid': 'år',
+                      'INDKN': 'lavindkomst_niveau',
+                      'value_x': 'n_lavindkomst',
+                      'value_y': 'p_lavindkomst'})
 )
