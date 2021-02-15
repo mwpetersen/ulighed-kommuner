@@ -5,6 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import requests
 from pyjstat import pyjstat
+import os
+from  sqlalchemy import (create_engine, MetaData, Table, Column, String, Integer, 
+                         SmallInteger, Float, insert, delete, select, ForeignKey)
 
 # Import data from dst
 
@@ -153,7 +156,7 @@ regioner = df_folketal_tekst["område"].map(lambda x: x.startswith('Region'))
 df_kommuner = (df_folketal_tekst
    .loc[(kun_kommuner) & (~regioner), ["område", "id"]]
    .drop_duplicates()
-   .rename(columns = {'område': 'kommune'})
+   .rename(columns = {'område': 'kommune_navn'})
 )
 
 df_kommuner_folketal = (df_folketal_tekst
@@ -167,6 +170,7 @@ df_kommuner_folketal = (df_folketal_tekst
 )
 
 df_kommuner_g_indkomst = (df_indkomst_kommuner
+   .merge(df_kommuner, left_on = 'KOMMUNEDK', right_on = 'id')
    .rename(columns = {'KOMMUNEDK': 'kommune_id',
                       'Tid': 'år',
                       'DECILGEN': 'decil_gruppe',
@@ -174,12 +178,7 @@ df_kommuner_g_indkomst = (df_indkomst_kommuner
    .loc[:, ["kommune_id", "år", "decil_gruppe", "g_indkomst"]]
 )
 
-df_kommuner_g_indkomst = (pd.merge(df_kommuner_g_indkomst, df_kommuner, 
-        left_on = 'kommune_id', right_on = 'id')
-       .loc[:, ["kommune_id", "år", "decil_gruppe", "g_indkomst"]]
-)
-
-kommuner_g_lavindkomst = (df_n_lavindkomst_kommuner
+df_kommuner_g_lavindkomst = (df_n_lavindkomst_kommuner
    .loc[:, ["KOMMUNEDK", "Tid", "value"]]
    .merge(df_pct_lavindkomst_kommuner, on = ['KOMMUNEDK', 'Tid'])
    .merge(df_kommuner, left_on = 'KOMMUNEDK', right_on = 'id')
@@ -190,3 +189,51 @@ kommuner_g_lavindkomst = (df_n_lavindkomst_kommuner
                       'value_x': 'n_lavindkomst',
                       'value_y': 'p_lavindkomst'})
 )
+
+# create tables in the ulighed_kommuner database
+
+engine = create_engine(os.environ['DATABASE_URI'])
+
+connection = engine.connect()
+
+metadata = MetaData()
+
+kommuner = Table('kommuner', metadata,
+      Column('id', Integer(), primary_key = True, nullable = False),
+      Column('kommune_navn', String(64), nullable = False, unique = True))
+
+kommuner_folketal = Table('kommuner_folketal', metadata,
+      Column('kommune_id', Integer(), ForeignKey("kommuner.id"), primary_key = True),
+      Column('år', Integer(), primary_key = True),
+      Column('kvartal', String(32), nullable = False),
+      Column('folketal', Float(), nullable = False))
+      
+kommuner_g_indkomst = Table('kommuner_g_indkomst', metadata,
+      Column('kommune_id', Integer(), ForeignKey("kommuner.id"), primary_key = True),
+      Column('år', Integer(), primary_key = True),
+      Column('decil_gruppe', String(32), primary_key = True),
+      Column('g_indkomst', Float(), nullable = False))
+
+kommuner_g_lavindkomst = Table('kommuner_g_lavindkomst', metadata,
+      Column('kommune_id', Integer(), ForeignKey("kommuner.id"), primary_key = True),
+      Column('år', Integer(), primary_key = True),
+      Column('lavindkomst_niveau', String(32), nullable = False),
+      Column('n_lavindkomst', Float(), nullable = False),
+      Column('p_lavindkomst', Float(), nullable = False))
+
+metadata.create_all(engine)
+
+# delete all the rows in the tables (if this script has already been run)
+
+delete_kommuner = connection.execute(delete(kommuner))
+delete_kommuner_folketal = connection.execute(delete(kommuner_folketal))
+delete_kommuner_g_indkomst = connection.execute(delete(kommuner_g_indkomst))
+delete_kommuner_g_lavindkomst = connection.execute(delete(kommuner_g_lavindkomst))
+
+# Load data to tables in postgres
+df_kommuner.to_sql(name="kommuner", con=connection, if_exists="append", index=False)
+df_kommuner_folketal.to_sql(name="kommuner_folketal", con=connection, if_exists="append", index=False)
+df_kommuner_g_indkomst.to_sql(name="kommuner_g_indkomst", con=connection, if_exists="append", index=False)
+df_kommuner_g_lavindkomst.to_sql(name="kommuner_g_lavindkomst", con=connection, if_exists="append", index=False)
+
+connection.close() 
