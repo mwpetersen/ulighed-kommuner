@@ -1,6 +1,6 @@
 # Import data from dst, wrangle it and load it into postgres
 
-# Packages
+# Modules
 import pandas as pd
 import matplotlib.pyplot as plt
 import requests
@@ -224,7 +224,6 @@ kommuner_g_lavindkomst = Table('kommuner_g_lavindkomst', metadata,
 metadata.create_all(engine)
 
 # delete all the rows in the tables (if this script has already been run)
-
 delete_kommuner = connection.execute(delete(kommuner))
 delete_kommuner_folketal = connection.execute(delete(kommuner_folketal))
 delete_kommuner_g_indkomst = connection.execute(delete(kommuner_g_indkomst))
