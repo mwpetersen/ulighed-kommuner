@@ -1,12 +1,11 @@
 # Import data from postgres, perform data validation and EDA, and create dashboard
 
-# Packages
+# Modules
 import pandas as pd
 import matplotlib.pyplot as plt
-import requests
-from pyjstat import pyjstat
 import os
 from sqlalchemy import (create_engine, MetaData, Table, select)
+import pandera as pa
 
 # Import data from postgres
 
@@ -26,7 +25,7 @@ kommuner_g_indkomst = Table('kommuner_g_indkomst', metadata, autoload = True, au
 
 kommuner_g_lavindkomst = Table('kommuner_g_lavindkomst', metadata, autoload = True, autoload_with = engine)
 
-## fetch data
+## fetch data from postgres
 
 def fetch_data(table_name):
   fetch_table = connection.execute(select([table_name])).fetchall()
@@ -44,3 +43,40 @@ df_kommuner_g_lavindkomst = fetch_data(kommuner_g_lavindkomst)
 
 connection.close()
 
+## Data validation
+schema_df_kommuner = pa.DataFrameSchema({
+  'id' : pa.Column(pa.Int, nullable = False, required = True),
+  'kommune_navn' : pa.Column(pa.String, nullable = False, required = True)
+})
+
+schema_df_kommuner.validate(df_kommuner)
+
+schema_df_kommuner_folketal = pa.DataFrameSchema({
+  'kommune_id' : pa.Column(pa.Int, nullable = False, required = True),
+  'år' : pa.Column(pa.Int, nullable = False, required = True),
+  'kvartal' : pa.Column(pa.String, nullable = False, required = True),
+  'folketal' : pa.Column(pa.Float, nullable = False, required = True)
+})
+
+schema_df_kommuner_folketal.validate(df_kommuner_folketal)
+
+schema_df_kommuner_g_indkomst = pa.DataFrameSchema({
+  'kommune_id' : pa.Column(pa.Int, nullable = False, required = True),
+  'år' : pa.Column(pa.Int, nullable = False, required = True),
+  'decil_gruppe' : pa.Column(pa.String, nullable = False, required = True),
+  'g_indkomst' : pa.Column(pa.Float, nullable = False, required = True)
+})
+
+schema_df_kommuner_g_indkomst.validate(df_kommuner_g_indkomst)
+
+schema_df_kommuner_g_lavindkomst = pa.DataFrameSchema({
+  'kommune_id' : pa.Column(pa.Int, nullable = False, required = True),
+  'år' : pa.Column(pa.Int, nullable = False, required = True),
+  'lavindkomst_niveau' : pa.Column(pa.String, nullable = False, required = True),
+  'n_lavindkomst' : pa.Column(pa.Float, nullable = False, required = True),
+  'p_lavindkomst' : pa.Column(pa.Float, nullable = False, required = True)
+})
+
+schema_df_kommuner_g_lavindkomst.validate(df_kommuner_g_lavindkomst)
+
+## Exploratory data analysis
