@@ -2,7 +2,8 @@
 
 # Modules
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 import os
 from sqlalchemy import (create_engine, MetaData, Table, select)
 import pandera as pa
@@ -43,7 +44,7 @@ df_kommuner_g_lavindkomst = fetch_data(kommuner_g_lavindkomst)
 
 connection.close()
 
-## Data validation
+# Data validation
 schema_df_kommuner = pa.DataFrameSchema({
   'id' : pa.Column(pa.Int, nullable = False, required = True),
   'kommune_navn' : pa.Column(pa.String, nullable = False, required = True)
@@ -79,4 +80,70 @@ schema_df_kommuner_g_lavindkomst = pa.DataFrameSchema({
 
 schema_df_kommuner_g_lavindkomst.validate(df_kommuner_g_lavindkomst)
 
-## Exploratory data analysis
+# Visualizations
+
+## linjegraf med gennemsnitlig disponibel indkomst for befolkningen de sidste 10 år, 
+## fordelt på decil.
+
+df_kommuner_g_indkomst = (df_kommuner_g_indkomst
+  .merge(df_kommuner, left_on = 'kommune_id', right_on = 'id', how = 'left')
+  .drop(['kommune_id', 'id'], axis = 1)
+  )
+
+kbh = df_kommuner_g_indkomst['kommune_navn'] == 'København'
+
+df_g_indkomst_kbh = df_kommuner_g_indkomst[(kbh)]
+
+fig = px.line(
+  data_frame = df_g_indkomst_kbh,
+  x = 'år',
+  y='g_indkomst',
+  color = 'decil_gruppe',
+  title='Gns. disponibel indkomst de seneste 10 år, fordelt på decil')
+
+fig.show()
+
+
+fig = go.Figure()
+for dg, gruppe in df_g_indkomst_kbh.groupby("decil_gruppe"):
+    fig.add_trace(go.Scatter(x=gruppe["år"], y=gruppe["g_indkomst"], name = dg, mode='lines'))
+
+# Adding labels next to lines
+annotations = []
+for dg, gruppe in df_g_indkomst_kbh.groupby("decil_gruppe"):
+    # labeling the right side of the plot
+    annotations.append(dict(xref='paper', x=1, y=gruppe["g_indkomst"].iloc[-1],
+                                  xanchor='left', yanchor='middle',
+                                  text=dg,
+                                  font=dict(family='Arial',
+                                            size=16),
+                                  showarrow=False))
+
+
+fig.update_layout(
+
+  annotations=annotations,
+  plot_bgcolor='white',
+  showlegend=False)
+
+fig.show()
+
+
+xaxis=dict(
+        showline=True,
+        showgrid=False,
+        showticklabels=True,
+        linecolor='rgb(204, 204, 204)',
+        linewidth=2,
+        ticks='outside',
+        tickfont=dict(
+            family='Arial',
+            size=12,
+            color='rgb(82, 82, 82)',
+        ),
+## linjegraf med andel af befolkningen de sidste 10 år, der lever i lavindkomstfamilier 
+## (antal mennesker i tooltip)
+
+## søjlegraf med top fem kommuner det seneste opgørelsesår med den største andel af 
+## deres befolkning der lever i lavindkomstfamilier
+
