@@ -94,42 +94,21 @@ kbh = df_kommuner_g_indkomst['kommune_navn'] == 'København'
 
 df_g_indkomst_kbh = df_kommuner_g_indkomst[(kbh)]
 
-fig = px.line(
-  data_frame = df_g_indkomst_kbh,
-  x = 'år',
-  y='g_indkomst',
-  color = 'decil_gruppe',
-  title='Gns. disponibel indkomst de seneste 10 år, fordelt på decil')
-
-fig.show()
-
-
 fig = go.Figure()
+
+## create line plot
 for dg, gruppe in df_g_indkomst_kbh.groupby("decil_gruppe"):
-    fig.add_trace(go.Scatter(x=gruppe["år"], y=gruppe["g_indkomst"], name = dg, mode='lines'))
+    fig.add_trace(go.Scatter(
+      x=gruppe["år"], 
+      y=gruppe["g_indkomst"], 
+      name = dg, 
+      mode='lines',
+      line=dict(color='rgb(39,112,214)', width=2)
+      ))
 
-# Adding labels next to lines
-annotations = []
-for dg, gruppe in df_g_indkomst_kbh.groupby("decil_gruppe"):
-    # labeling the right side of the plot
-    annotations.append(dict(xref='paper', x=1, y=gruppe["g_indkomst"].iloc[-1],
-                                  xanchor='left', yanchor='middle',
-                                  text=dg,
-                                  font=dict(family='Arial',
-                                            size=16),
-                                  showarrow=False))
-
-
+# style line plot
 fig.update_layout(
-
-  annotations=annotations,
-  plot_bgcolor='white',
-  showlegend=False)
-
-fig.show()
-
-
-xaxis=dict(
+    xaxis=dict(
         showline=True,
         showgrid=False,
         showticklabels=True,
@@ -141,6 +120,67 @@ xaxis=dict(
             size=12,
             color='rgb(82, 82, 82)',
         ),
+    ),
+    yaxis=dict(
+        showline=True,
+        showgrid=False,
+        showticklabels=True,
+        linecolor='rgb(204, 204, 204)',
+        linewidth=2,
+        ticks='outside',
+        tickfont=dict(
+            family='Arial',
+            size=12,
+            color='rgb(82, 82, 82)',
+        ),
+    ),
+    autosize=False,
+    margin=dict(
+        autoexpand=False,
+        l=100,
+        r=50,
+        t=110,
+    ),
+    showlegend=False,
+    plot_bgcolor='white'
+)
+
+# Adding labels next to lines
+annotations = []
+for dg, gruppe in df_g_indkomst_kbh.groupby("decil_gruppe"):
+    # labeling the right side of the plot
+    annotations.append(dict(xref='paper', x=1, y=gruppe["g_indkomst"].iloc[-1],
+                                  xanchor='left', yanchor='middle',
+                                  text=dg,
+                                  font=dict(family='Arial',
+                                            size=12),
+                                  showarrow=False))
+
+# Add title
+annotations.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
+                              xanchor='left', yanchor='bottom',
+                              text='Gns. disponibel indkomst de seneste 10 år, fordelt på decil',
+                              font=dict(family='Arial',
+                                        size=18,
+                                        color='rgb(37,37,37)'),
+                              showarrow=False))
+
+# Add source
+annotations.append(dict(xref='paper', yref='paper', x=1.0, y=-0.1,
+                              xanchor='right', yanchor='top',
+                              text='Kilde: Danmarks Statistik',
+                              font=dict(family='Arial',
+                                        size=12,
+                                        color='rgb(150,150,150)'),
+                              showarrow=False))
+
+fig.update_layout(
+  annotations=annotations)
+
+## Show plot
+fig.show()
+
+
 ## linjegraf med andel af befolkningen de sidste 10 år, der lever i lavindkomstfamilier 
 ## (antal mennesker i tooltip)
 
