@@ -2,6 +2,7 @@
 
 # Modules
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import os
@@ -94,24 +95,37 @@ kbh = df_kommuner_g_indkomst['kommune_navn'] == 'København'
 
 df_g_indkomst_kbh = df_kommuner_g_indkomst[(kbh)]
 
-fig = go.Figure()
-
 ## create line plot
-for dg, gruppe in df_g_indkomst_kbh.groupby("decil_gruppe"):
-    fig.add_trace(go.Scatter(
-      x=gruppe["år"], 
-      y=gruppe["g_indkomst"], 
-      name = dg, 
-      mode='lines',
-      line=dict(color='rgb(39,112,214)', width=2)
-      ))
+
+fig_indkomst = px.line(
+  df_g_indkomst_kbh,
+  x = "år",
+  y = "g_indkomst",
+  color = "decil_gruppe",
+  hover_name = "kommune_navn",
+  custom_data=["decil_gruppe", "år", "g_indkomst"])
+  )
+
+# The same as above, but with the go method
+#fig_indkomst = go.Figure()
+#for dg, gruppe in df_g_indkomst_kbh.groupby("decil_gruppe"):
+#    fig_indkomst.add_trace(go.Scatter(
+#      x=gruppe["år"], 
+#      y=gruppe["g_indkomst"], 
+#      name = dg, 
+#      mode='lines',
+#      line=dict(color='rgb(39,112,214)', width=2)
+#      ))
 
 # style line plot
-fig.update_layout(
+x = np.sort(df_g_indkomst_kbh['år'].unique()).tolist()
+
+fig_indkomst.update_layout(
     xaxis=dict(
         showline=True,
         showgrid=False,
         showticklabels=True,
+        tickvals=x,
         linecolor='rgb(204, 204, 204)',
         linewidth=2,
         ticks='outside',
@@ -125,6 +139,7 @@ fig.update_layout(
         showline=True,
         showgrid=False,
         showticklabels=True,
+        tickformat=',.d',
         linecolor='rgb(204, 204, 204)',
         linewidth=2,
         ticks='outside',
@@ -142,9 +157,21 @@ fig.update_layout(
         t=110,
     ),
     showlegend=False,
-    plot_bgcolor='white'
+    xaxis_title=None,
+    yaxis_title=None,
+    plot_bgcolor='white',
+    separators=",.",
+    hoverlabel=dict(
+        bgcolor="white",
+        font_size=12,
+        font_family='Arial'
+    )
 )
 
+fig_indkomst.update_traces(
+  line=dict(color='rgb(39,112,214)', width=2),
+  hovertemplate="Gruppe: %{customdata[0]} <br>År: %{customdata[1]} </br>Indkomst: %{customdata[2]}")
+  
 # Adding labels next to lines
 annotations = []
 for dg, gruppe in df_g_indkomst_kbh.groupby("decil_gruppe"):
@@ -174,11 +201,11 @@ annotations.append(dict(xref='paper', yref='paper', x=1.0, y=-0.1,
                                         color='rgb(150,150,150)'),
                               showarrow=False))
 
-fig.update_layout(
+fig_indkomst.update_layout(
   annotations=annotations)
 
 ## Show plot
-fig.show()
+fig_indkomst.show()
 
 
 ## linjegraf med andel af befolkningen de sidste 10 år, der lever i lavindkomstfamilier 
