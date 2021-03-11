@@ -2,7 +2,6 @@
 
 # Modules
 import pandas as pd
-import matplotlib.pyplot as plt
 import requests
 from pyjstat import pyjstat
 import os

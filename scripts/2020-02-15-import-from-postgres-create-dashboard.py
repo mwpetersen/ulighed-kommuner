@@ -102,7 +102,7 @@ fig_indkomst = px.line(
   x = "år",
   y = "g_indkomst",
   color = "decil_gruppe",
-  custom_data=["decil_gruppe", "år", "g_indkomst"])
+  custom_data=["decil_gruppe", "år", "g_indkomst", "kommune_navn"])
   )
 
 # The same as above, but with the go method
@@ -175,7 +175,10 @@ fig_indkomst.update_layout(
 # Set line color and width, and set information in tooltip
 fig_indkomst.update_traces(
   line=dict(color='rgb(39,112,214)', width=2),
-  hovertemplate="Gruppe: %{customdata[0]} <br>År: %{customdata[1]} </br>Indkomst: %{customdata[2]}")
+  hovertemplate=("</br><b>%{customdata[3]}</b></br>" +
+                "Gruppe: %{customdata[0]}<br>" +
+                "År: %{customdata[1]}</br>" +
+                "Indkomst: %{customdata[2]}"))
   
 # Adding labels next to lines
 annotations = []
@@ -231,7 +234,6 @@ fig_lavindkomst = px.line(
   df_g_lavindkomst_kbh,
   x = "år",
   y = "p_lavindkomst",
-  hover_name = "kommune_navn",
   custom_data=["lavindkomst_niveau", "år", "p_lavindkomst", "n_lavindkomst", "kommune_navn"],
   height=400
   )
@@ -287,8 +289,8 @@ fig_lavindkomst.update_layout(
 
 fig_lavindkomst.update_traces(
   line=dict(color='rgb(39,112,214)', width=4),
-  hovertemplate=("</br><b>%{customdata[4]}</b></br>"
-                 "</br>År: %{customdata[1]}</br>" + 
+  hovertemplate=("</br><b>%{customdata[4]}</b></br>" +
+                 "År: %{customdata[1]}</br>" + 
                  "Andel: %{customdata[2]} procent</br>" +
                  "Antal: %{customdata[3]}</br>" +
                  "Lavindkomstniveau: %{customdata[0]} procent af medianen"))
@@ -333,8 +335,9 @@ fig_top5 = px.bar(
   lavindkomst_top5,
   x = 'p_lavindkomst',
   y = 'kommune_navn',
-  text='p_lavindkomst' + '%',
+  text='p_lavindkomst',
   orientation = 'h',
+  custom_data=["lavindkomst_niveau", "år", "p_lavindkomst", "n_lavindkomst", "kommune_navn"],
   height=350
 )
 
@@ -395,6 +398,12 @@ annotations_top5.append(dict(xref='paper', yref='paper', x=1.0, y=-0.05,
 fig_top5.update_layout(
   annotations=annotations_top5)
 
-fig_top5.update_traces(texttemplate='%{text} %')
+fig_top5.update_traces(
+  texttemplate='%{text} %',
+  hovertemplate=("</br><b>%{customdata[4]}</b></br>" +
+                 "År: %{customdata[1]}</br>" + 
+                 "Andel: %{customdata[2]} procent</br>" +
+                 "Antal: %{customdata[3]}</br>" +
+                 "Lavindkomstniveau: %{customdata[0]} procent af medianen"))
 
 fig_top5.show()
