@@ -267,7 +267,7 @@ fig_lavindkomst.update_layout(
             family='Arial',
             size=12,
             color='rgb(82, 82, 82)',
-        ),
+        )
     ),
     autosize=False,
     margin=dict(
