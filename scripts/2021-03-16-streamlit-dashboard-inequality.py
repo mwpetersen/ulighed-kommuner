@@ -140,9 +140,9 @@ ds_folketal = pyjstat.Dataset.read(r_folketal.text)
 ## Write to pandas dataframe
 df_indkomst_kommuner = ds_indkomst_kommuner.write('dataframe', naming = 'label')
 
-df_pct_lavindkomst_kommuner = ds_pct_lavindkomst_kommuner.write('dataframe', naming = 'id')
+df_pct_lavindkomst_kommuner = ds_pct_lavindkomst_kommuner.write('dataframe', naming = 'label')
 
-df_n_lavindkomst_kommuner = ds_n_lavindkomst_kommuner.write('dataframe', naming = 'id')
+df_n_lavindkomst_kommuner = ds_n_lavindkomst_kommuner.write('dataframe', naming = 'label')
 
 df_folketal_tekst = ds_folketal.write('dataframe', naming = 'label')
 df_folketal_kode = ds_folketal.write('dataframe', naming = 'id')
@@ -162,13 +162,28 @@ df_kommuner_g_indkomst = (df_indkomst_kommuner
 
 df_kommuner_g_indkomst["år"] = pd.to_numeric(df_kommuner_g_indkomst["år"])
 
+df_kommuner_g_lavindkomst = (df_n_lavindkomst_kommuner
+   .loc[(kun_kommuner) & (~regioner), ["kommune", "tid", "value"]]
+   .merge(df_pct_lavindkomst_kommuner, on = ['kommune', 'tid'])
+   .rename(columns = {'kommune': 'kommune_navn',
+                      'tid': 'år',
+                      'indkomstniveau ': 'lavindkomst_niveau',
+                      'value_x': 'n_lavindkomst',
+                      'value_y': 'p_lavindkomst'})
+   .drop(labels ="Indhold", axis = 1)
+)
+
+df_kommuner_g_lavindkomst["år"] = pd.to_numeric(df_kommuner_g_lavindkomst["år"])
+
 # Dashboard title
 st.title('Economic inequality and relative poverty in Danish municipalities')
 
+municipalities = df_kommuner_g_indkomst['kommune_navn'].drop_duplicates().tolist()
+
 # Create drop down box where the user can select municipality
 municipality_category = st.selectbox(
-    'Choose municipality:',
-     df_kommuner_g_indkomst['kommune_navn'].unique()
+    'Choose municipality:', 
+    municipalities 
     )
 
 # Create line plot with average income grouped by decile
@@ -194,7 +209,7 @@ fig_indkomst = px.line(
 #      line=dict(color='rgb(39,112,214)', width=2)
 #      ))
 
-# style line plot
+## style line plot
 x = np.sort(df_g_indkomst_filtered['år'].unique()).tolist()
 
 ## values to get x axis length - used in range argument in .update_layout
@@ -243,15 +258,15 @@ fig_indkomst.update_layout(
     )
 )
 
-# Set line color and width, and set information in tooltip
+## Set line color and width, and set information in tooltip
 fig_indkomst.update_traces(
   line=dict(color='rgb(39,112,214)', width=2),
   hovertemplate=("</br><b>%{customdata[3]}</b></br>" +
-                "Gruppe: %{customdata[0]}<br>" +
-                "År: %{customdata[1]}</br>" +
-                "Indkomst: %{customdata[2]}"))
+                "Group: %{customdata[0]}<br>" +
+                "Year: %{customdata[1]}</br>" +
+                "Income: %{customdata[2]}"))
   
-# Adding labels next to lines
+## Adding labels next to lines
 annotations = []
 for dg, gruppe in df_g_indkomst_filtered.groupby("decil_gruppe"):
     # labeling the right side of the plot
@@ -262,19 +277,19 @@ for dg, gruppe in df_g_indkomst_filtered.groupby("decil_gruppe"):
                                             size=12),
                                   showarrow=False))
 
-# Add title
+## Add title
 annotations.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
                               xanchor='left', yanchor='bottom',
-                              text='Gns. disponibel indkomst de seneste 10 år, fordelt på decil',
+                              text='Figure 1: Average income the last 10 years, grouped by decil',
                               font=dict(family='Arial',
                                         size=18,
                                         color='rgb(37,37,37)'),
                               showarrow=False))
 
-# Add source
+## Add source
 annotations.append(dict(xref='paper', yref='paper', x=1.0, y=-0.1,
                               xanchor='right', yanchor='top',
-                              text='Kilde: Danmarks Statistik',
+                              text='Source: Statistics Denmark',
                               font=dict(family='Arial',
                                         size=12,
                                         color='rgb(150,150,150)'),
@@ -285,3 +300,175 @@ fig_indkomst.update_layout(
 
 ## Show plot
 st.plotly_chart(fig_indkomst)
+
+# Create line plot with share of people living in low income families
+
+chosen_filter_lav = df_kommuner_g_lavindkomst['kommune_navn'] == municipality_category
+
+df_g_lavindkomst_filtered = df_kommuner_g_lavindkomst[(chosen_filter_lav)]
+
+fig_lavindkomst = px.line(
+  df_g_lavindkomst_filtered,
+  x = "år",
+  y = "p_lavindkomst",
+  custom_data=["lavindkomst_niveau", "år", "p_lavindkomst", "n_lavindkomst", "kommune_navn"],
+  height=400
+  )
+
+fig_lavindkomst.update_layout(
+    xaxis=dict(
+        showline=True,
+        showgrid=False,
+        showticklabels=True,
+        tickvals=x,
+        range = [x_min,x_max],
+        linecolor='rgb(204, 204, 204)',
+        linewidth=2,
+        ticks='outside',
+        tickfont=dict(
+            family='Arial',
+            size=12,
+            color='rgb(82, 82, 82)',
+        ),
+    ),
+    yaxis=dict(
+        range = [0, 23],
+        showline=True,
+        showgrid=False,
+        showticklabels=True,
+        showticksuffix='all',
+        ticksuffix='%', # https://plotly.com/javascript/tick-formatting/
+        linecolor='rgb(204, 204, 204)',
+        linewidth=2,
+        ticks='outside',
+        tickfont=dict(
+            family='Arial',
+            size=12,
+            color='rgb(82, 82, 82)',
+        ),
+    ),
+    xaxis_title=None,
+    yaxis_title=None,
+    plot_bgcolor='white',
+    hoverlabel=dict(
+        bgcolor="white",
+        font_size=12,
+        font_family='Arial'
+    )
+)
+
+fig_lavindkomst.update_traces(
+  line=dict(color='rgb(39,112,214)', width=4),
+  hovertemplate=("</br><b>%{customdata[4]}</b></br>" +
+                 "Year: %{customdata[1]}</br>" + 
+                 "percentage: %{customdata[2]} procent</br>" +
+                 "Count: %{customdata[3]}</br>" +
+                 "income level: %{customdata[0]} percent of median income"))
+
+
+annotations_low = []
+
+# Add title
+annotations_low.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
+                              xanchor='left', yanchor='bottom',
+                              text='Figure 2: Persons living in low income families (% of the population)',
+                              font=dict(family='Arial',
+                                        size=18,
+                                        color='rgb(37,37,37)'),
+                              showarrow=False))
+
+# Add source
+annotations_low.append(dict(xref='paper', yref='paper', x=1.0, y=-0.15,
+                              xanchor='right', yanchor='top',
+                              text='Source: Statistics Denmark',
+                              font=dict(family='Arial',
+                                        size=12,
+                                        color='rgb(150,150,150)'),
+                              showarrow=False))
+
+fig_lavindkomst.update_layout(
+  annotations=annotations_low)
+
+st.plotly_chart(fig_lavindkomst)
+
+# Bar plot with municipalities with the highest percentage of their population
+# living in low income families
+
+seneste_år = df_kommuner_g_lavindkomst['år'].max()
+
+lavindkomst_top5 = (df_kommuner_g_lavindkomst
+  .loc[df_kommuner_g_lavindkomst['år'] == seneste_år]
+  .nlargest(5, 'p_lavindkomst', keep = 'all')
+)
+
+fig_top5 = px.bar(
+  lavindkomst_top5,
+  x = 'p_lavindkomst',
+  y = 'kommune_navn',
+  text='p_lavindkomst',
+  orientation = 'h',
+  custom_data=["lavindkomst_niveau", "år", "p_lavindkomst", "n_lavindkomst", "kommune_navn"],
+  height=350
+)
+
+fig_top5.update_traces(marker_color='rgb(39,112,214)')
+
+fig_top5.update_layout(
+    xaxis=dict(
+        showline=False,
+        showgrid=False,
+        showticklabels=False
+    ),
+    yaxis=dict(
+      autorange="reversed",
+      tickfont=dict(
+            family='Arial',
+            size=12,
+            color='rgb(82, 82, 82)',
+        ),
+    ),
+    margin=dict(
+        pad=10 # https://stackoverflow.com/questions/52391451/how-do-i-add-space-between-the-tick-labels-and-the-graph-in-plotly-python
+    ),
+    xaxis_title=None,
+    yaxis_title=None,
+    plot_bgcolor='white',
+    hoverlabel=dict(
+        bgcolor="white",
+        font_size=12,
+        font_family='Arial'
+    )
+)
+
+annotations_top5 = []
+
+# Add title
+annotations_top5.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
+                              xanchor='left', yanchor='bottom',
+                              text='Figure 3: Municipalities with the largest share living in low income families',
+                              font=dict(family='Arial',
+                                        size=18,
+                                        color='rgb(37,37,37)'),
+                              showarrow=False))
+
+# Add source
+annotations_top5.append(dict(xref='paper', yref='paper', x=1.0, y=-0.05,
+                              xanchor='right', yanchor='top',
+                              text='Source: Statistics Denmark',
+                              font=dict(family='Arial',
+                                        size=12,
+                                        color='rgb(150,150,150)'),
+                              showarrow=False))
+
+fig_top5.update_layout(
+  annotations=annotations_top5)
+
+fig_top5.update_traces(
+  texttemplate='%{text} %',
+  hovertemplate=("</br><b>%{customdata[4]}</b></br>" +
+                 "Year: %{customdata[1]}</br>" + 
+                 "Percentage: %{customdata[2]} procent</br>" +
+                 "Count: %{customdata[3]}</br>" +
+                 "Income level: %{customdata[0]} percent of median income"))
+
+st.plotly_chart(fig_top5)
