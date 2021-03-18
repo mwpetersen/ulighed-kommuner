@@ -175,6 +175,8 @@ df_kommuner_g_lavindkomst = (df_n_lavindkomst_kommuner
 
 df_kommuner_g_lavindkomst["år"] = pd.to_numeric(df_kommuner_g_lavindkomst["år"])
 
+df_kommuner_g_lavindkomst["lavindkomst_niveau"] = 50
+
 # Dashboard title
 st.title('Economic inequality and relative poverty in Danish municipalities')
 
