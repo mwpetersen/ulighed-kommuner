@@ -178,7 +178,7 @@ df_kommuner_g_lavindkomst["år"] = pd.to_numeric(df_kommuner_g_lavindkomst["år"
 df_kommuner_g_lavindkomst["lavindkomst_niveau"] = 50
 
 # Dashboard title
-st.title('Economic inequality and relative poverty in Danish municipalities')
+st.title('Economic inequality in Danish municipalities')
 
 st.markdown("""
 Denmark is one of the most economically equal countries in the world. However, there is still
