@@ -180,13 +180,30 @@ df_kommuner_g_lavindkomst["lavindkomst_niveau"] = 50
 # Dashboard title
 st.title('Economic inequality and relative poverty in Danish municipalities')
 
-municipalities = df_kommuner_g_indkomst['kommune_navn'].drop_duplicates().tolist()
+st.markdown("""
+Denmark is one of the most economically equal countries in the world. However, there is still
+significant inequality, and the inequality varies a great deal between municipalities. 
+The interactive graphs on this page let you see the income inequality and share of people living in 
+low-income families in each municipality in Denmark.
+""")
 
 # Create drop down box where the user can select municipality
+municipalities = df_kommuner_g_indkomst['kommune_navn'].drop_duplicates().tolist()
+
 municipality_category = st.selectbox(
     'Choose municipality:', 
     municipalities 
     )
+
+st.header("Income inequality")
+
+st.markdown("""
+Figure 1 shows the change in equivalent disposable income over time for each income group. 
+The income groups are created by dividing the population of each municipality into 10 equally 
+sized groups according to the equivalent disposable income for each household. Persons in 
+households with the lowest equivalent disposable income are in the 1. decile, while those 
+with the highest income are in the 10. decile.
+""")
 
 # Create line plot with average income grouped by decile
 chosen_filter = df_kommuner_g_indkomst['kommune_navn'] == municipality_category
@@ -257,6 +274,12 @@ fig_indkomst.update_layout(
         bgcolor="white",
         font_size=12,
         font_family='Arial'
+    ),
+    margin=dict(
+        #l=0,
+        t=90,
+        b=50,
+        pad=1
     )
 )
 
@@ -266,7 +289,7 @@ fig_indkomst.update_traces(
   hovertemplate=("</br><b>%{customdata[3]}</b></br>" +
                 "Group: %{customdata[0]}<br>" +
                 "Year: %{customdata[1]}</br>" +
-                "Income: %{customdata[2]}"))
+                "Income: %{customdata[2]} kr."))
   
 ## Adding labels next to lines
 annotations = []
@@ -279,15 +302,23 @@ for dg, gruppe in df_g_indkomst_filtered.groupby("decil_gruppe"):
                                             size=12),
                                   showarrow=False))
 
-## Add title
-annotations.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
+## Add title and subtitle
+annotations.append(dict(xref='paper', yref='paper', x=0.0, y=1.15,
                               xanchor='left', yanchor='bottom',
-                              text='Figure 1: Average income the last 10 years, grouped by decil',
+                              text='Figure 1: Average disposable income, grouped by decile' ,
                               font=dict(family='Arial',
                                         size=18,
                                         color='rgb(37,37,37)'),
                               showarrow=False))
 
+annotations.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
+                              xanchor='left', yanchor='bottom',
+                              text='Income is in Danish kroner' ,
+                              font=dict(family='Arial',
+                                        size=14,
+                                        color='rgb(37,37,37)'),
+                              showarrow=False))
+                              
 ## Add source
 annotations.append(dict(xref='paper', yref='paper', x=1.0, y=-0.1,
                               xanchor='right', yanchor='top',
@@ -302,6 +333,14 @@ fig_indkomst.update_layout(
 
 ## Show plot
 st.plotly_chart(fig_indkomst)
+
+st.header("Share of people living in low-income families")
+
+st.markdown("""
+Figure 2 shows the change over time in the share of the population of the municipality who 
+live in a low-income family. Those living in a low-income family are people in households with 
+a total income lower than 50 percent of the median income for households in Denmark.
+""")
 
 # Create line plot with share of people living in low income families
 
@@ -356,6 +395,11 @@ fig_lavindkomst.update_layout(
         bgcolor="white",
         font_size=12,
         font_family='Arial'
+    ),
+    margin=dict(
+        #l=0,
+        t=60,
+        pad=1
     )
 )
 
@@ -363,9 +407,9 @@ fig_lavindkomst.update_traces(
   line=dict(color='rgb(39,112,214)', width=4),
   hovertemplate=("</br><b>%{customdata[4]}</b></br>" +
                  "Year: %{customdata[1]}</br>" + 
-                 "percentage: %{customdata[2]} procent</br>" +
-                 "Count: %{customdata[3]}</br>" +
-                 "income level: %{customdata[0]} percent of median income"))
+                 "Share of population: %{customdata[2]} %</br>" +
+                 "Number of people: %{customdata[3]}</br>" +
+                 "income level: %{customdata[0]} % of median income"))
 
 
 annotations_low = []
@@ -373,7 +417,7 @@ annotations_low = []
 # Add title
 annotations_low.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
                               xanchor='left', yanchor='bottom',
-                              text='Figure 2: Persons living in low income families (% of the population)',
+                              text='Figure 2: Share of the population living in a low-income family',
                               font=dict(family='Arial',
                                         size=18,
                                         color='rgb(37,37,37)'),
@@ -393,13 +437,23 @@ fig_lavindkomst.update_layout(
 
 st.plotly_chart(fig_lavindkomst)
 
+st.header("Municipalities with the largest share of their population living in a low-income family")
+
+st.markdown("""
+Figure 3 shows the five municipalities with the largest share living in a low-income family. 
+Use the slider below to choose the year for which data is shown.
+""")
+
 # Bar plot with municipalities with the highest percentage of their population
 # living in low income families
 
-seneste_år = df_kommuner_g_lavindkomst['år'].max()
+max_år = int(df_kommuner_g_lavindkomst['år'].max())
+min_år = int(df_kommuner_g_lavindkomst['år'].min())
+
+year_filter = st.slider('Choose year:', min_år, max_år, max_år)
 
 lavindkomst_top5 = (df_kommuner_g_lavindkomst
-  .loc[df_kommuner_g_lavindkomst['år'] == seneste_år]
+  .loc[df_kommuner_g_lavindkomst['år'] == year_filter]
   .nlargest(5, 'p_lavindkomst', keep = 'all')
 )
 
@@ -430,6 +484,7 @@ fig_top5.update_layout(
         ),
     ),
     margin=dict(
+        t=60,
         pad=10 # https://stackoverflow.com/questions/52391451/how-do-i-add-space-between-the-tick-labels-and-the-graph-in-plotly-python
     ),
     xaxis_title=None,
@@ -447,7 +502,7 @@ annotations_top5 = []
 # Add title
 annotations_top5.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
                               xanchor='left', yanchor='bottom',
-                              text='Figure 3: Municipalities with the largest share living in low income families',
+                              text='Figure 3: Municipalities with largest share living in a low-income family',
                               font=dict(family='Arial',
                                         size=18,
                                         color='rgb(37,37,37)'),
@@ -469,8 +524,8 @@ fig_top5.update_traces(
   texttemplate='%{text} %',
   hovertemplate=("</br><b>%{customdata[4]}</b></br>" +
                  "Year: %{customdata[1]}</br>" + 
-                 "Percentage: %{customdata[2]} procent</br>" +
-                 "Count: %{customdata[3]}</br>" +
-                 "Income level: %{customdata[0]} percent of median income"))
+                 "Share of population: %{customdata[2]} %</br>" +
+                 "Number of people: %{customdata[3]}</br>" +
+                 "Income level: %{customdata[0]} % of median income"))
 
 st.plotly_chart(fig_top5)
