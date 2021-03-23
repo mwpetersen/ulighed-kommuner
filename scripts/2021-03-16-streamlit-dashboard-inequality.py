@@ -336,7 +336,7 @@ fig_indkomst.update_layout(
 ## Show plot
 st.plotly_chart(fig_indkomst)
 
-st.header("Share of people living in low-income families")
+st.header("Share of people living in a low-income family")
 
 st.markdown("""
 Figure 2 shows the change over time in the share of the population of the municipality who 
