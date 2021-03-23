@@ -1,0 +1,6 @@
+pyjstat==2.2.0
+requests==2.25.1
+plotly==4.14.3
+numpy==1.20.0
+streamlit==0.78.0
+pandas==1.2.1
