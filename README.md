@@ -1,2 +1,2 @@
 # ulighed-kommuner
-Dashboard om indkomstulighed og relativ fattigdom i danske kommuner.
+Web app about income inequality in Danish municipalities.
