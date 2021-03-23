@@ -154,28 +154,30 @@ regioner = df_indkomst_kommuner["kommune"].map(lambda x: x.startswith('Region'))
 
 df_kommuner_g_indkomst = (df_indkomst_kommuner
    .loc[(kun_kommuner) & (~regioner), ["decil gennemsnit", "kommune", "tid", "value"]]
-   .rename(columns = {'tid': 'år',
-                      'decil gennemsnit': 'decil_gruppe',
-                      'value': 'g_indkomst',
-                      'kommune': 'kommune_navn'})
+   .rename(columns = {'tid': 'year',
+                      'decil gennemsnit': 'decile_group',
+                      'value': 'avg_income',
+                      'kommune': 'municipality_name'})
 )
 
-df_kommuner_g_indkomst["år"] = pd.to_numeric(df_kommuner_g_indkomst["år"])
+df_kommuner_g_indkomst["year"] = pd.to_numeric(df_kommuner_g_indkomst["year"])
+
+df_kommuner_g_indkomst['decile_group'] = df_kommuner_g_indkomst['decile_group'].astype(str) + 'e'
 
 df_kommuner_g_lavindkomst = (df_n_lavindkomst_kommuner
    .loc[(kun_kommuner) & (~regioner), ["kommune", "tid", "value"]]
    .merge(df_pct_lavindkomst_kommuner, on = ['kommune', 'tid'])
-   .rename(columns = {'kommune': 'kommune_navn',
-                      'tid': 'år',
-                      'indkomstniveau ': 'lavindkomst_niveau',
-                      'value_x': 'n_lavindkomst',
-                      'value_y': 'p_lavindkomst'})
+   .rename(columns = {'kommune': 'municipality_name',
+                      'tid': 'year',
+                      'indkomstniveau ': 'income_level',
+                      'value_x': 'n_lowincome',
+                      'value_y': 'p_lowincome'})
    .drop(labels ="Indhold", axis = 1)
 )
 
-df_kommuner_g_lavindkomst["år"] = pd.to_numeric(df_kommuner_g_lavindkomst["år"])
+df_kommuner_g_lavindkomst["year"] = pd.to_numeric(df_kommuner_g_lavindkomst["year"])
 
-df_kommuner_g_lavindkomst["lavindkomst_niveau"] = 50
+df_kommuner_g_lavindkomst["income_level"] = 50
 
 # Dashboard title
 st.title('Economic inequality in Danish municipalities')
@@ -188,7 +190,7 @@ low-income families in each municipality in Denmark.
 """)
 
 # Create drop down box where the user can select municipality
-municipalities = df_kommuner_g_indkomst['kommune_navn'].drop_duplicates().tolist()
+municipalities = df_kommuner_g_indkomst['municipality_name'].drop_duplicates().tolist()
 
 municipality_category = st.selectbox(
     'Choose municipality:', 
@@ -206,16 +208,16 @@ with the highest income are in the 10. decile.
 """)
 
 # Create line plot with average income grouped by decile
-chosen_filter = df_kommuner_g_indkomst['kommune_navn'] == municipality_category
+chosen_filter = df_kommuner_g_indkomst['municipality_name'] == municipality_category
 
 df_g_indkomst_filtered = df_kommuner_g_indkomst[(chosen_filter)]
 
 fig_indkomst = px.line(
   df_g_indkomst_filtered,
-  x = "år",
-  y = "g_indkomst",
-  color = "decil_gruppe",
-  custom_data=["decil_gruppe", "år", "g_indkomst", "kommune_navn"])
+  x = "year",
+  y = "avg_income",
+  color = "decile_group",
+  custom_data=["decile_group", "year", "avg_income", "municipality_name"])
 
 # The same as above, but with the go method
 #fig_indkomst = go.Figure()
@@ -229,11 +231,11 @@ fig_indkomst = px.line(
 #      ))
 
 ## style line plot
-x = np.sort(df_g_indkomst_filtered['år'].unique()).tolist()
+x = np.sort(df_g_indkomst_filtered['year'].unique()).tolist()
 
 ## values to get x axis length - used in range argument in .update_layout
-x_min = df_g_indkomst_filtered['år'].min() - 0.1
-x_max = df_g_indkomst_filtered['år'].max() + 0.1
+x_min = df_g_indkomst_filtered['year'].min() - 0.1
+x_max = df_g_indkomst_filtered['year'].max() + 0.1
 
 fig_indkomst.update_layout(
     xaxis=dict(
@@ -293,9 +295,9 @@ fig_indkomst.update_traces(
   
 ## Adding labels next to lines
 annotations = []
-for dg, gruppe in df_g_indkomst_filtered.groupby("decil_gruppe"):
+for dg, gruppe in df_g_indkomst_filtered.groupby("decile_group"):
     # labeling the right side of the plot
-    annotations.append(dict(xref='paper', x=1, y=gruppe["g_indkomst"].iloc[-1],
+    annotations.append(dict(xref='paper', x=1, y=gruppe["avg_income"].iloc[-1],
                                   xanchor='left', yanchor='middle',
                                   text=dg,
                                   font=dict(family='Arial',
@@ -344,15 +346,15 @@ a total income lower than 50 percent of the median income for households in Denm
 
 # Create line plot with share of people living in low income families
 
-chosen_filter_lav = df_kommuner_g_lavindkomst['kommune_navn'] == municipality_category
+chosen_filter_lav = df_kommuner_g_lavindkomst['municipality_name'] == municipality_category
 
 df_g_lavindkomst_filtered = df_kommuner_g_lavindkomst[(chosen_filter_lav)]
 
 fig_lavindkomst = px.line(
   df_g_lavindkomst_filtered,
-  x = "år",
-  y = "p_lavindkomst",
-  custom_data=["lavindkomst_niveau", "år", "p_lavindkomst", "n_lavindkomst", "kommune_navn"],
+  x = "year",
+  y = "p_lowincome",
+  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"],
   height=400
   )
 
@@ -447,23 +449,23 @@ Use the slider below to choose the year for which data is shown.
 # Bar plot with municipalities with the highest percentage of their population
 # living in low income families
 
-max_år = int(df_kommuner_g_lavindkomst['år'].max())
-min_år = int(df_kommuner_g_lavindkomst['år'].min())
+max_year = int(df_kommuner_g_lavindkomst['year'].max())
+min_year = int(df_kommuner_g_lavindkomst['year'].min())
 
-year_filter = st.slider('Choose year:', min_år, max_år, max_år)
+year_filter = st.slider('Choose year:', min_year, max_year, max_year)
 
 lavindkomst_top5 = (df_kommuner_g_lavindkomst
-  .loc[df_kommuner_g_lavindkomst['år'] == year_filter]
-  .nlargest(5, 'p_lavindkomst', keep = 'all')
+  .loc[df_kommuner_g_lavindkomst['year'] == year_filter]
+  .nlargest(5, 'p_lowincome', keep = 'all')
 )
 
 fig_top5 = px.bar(
   lavindkomst_top5,
-  x = 'p_lavindkomst',
-  y = 'kommune_navn',
-  text='p_lavindkomst',
+  x = 'p_lowincome',
+  y = 'municipality_name',
+  text='p_lowincome',
   orientation = 'h',
-  custom_data=["lavindkomst_niveau", "år", "p_lavindkomst", "n_lavindkomst", "kommune_navn"],
+  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"],
   height=350
 )
 
