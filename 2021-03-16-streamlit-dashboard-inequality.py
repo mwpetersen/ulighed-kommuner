@@ -334,7 +334,7 @@ fig_indkomst.update_layout(
   annotations=annotations)
 
 ## Show plot
-st.plotly_chart(fig_indkomst, use_container_width = True)
+st.plotly_chart(fig_indkomst)
 
 st.header("Share of people living in a low-income family")
 
