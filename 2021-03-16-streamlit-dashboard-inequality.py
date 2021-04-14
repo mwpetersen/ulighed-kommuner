@@ -334,7 +334,7 @@ fig_indkomst.update_layout(
   annotations=annotations)
 
 ## Show plot
-st.plotly_chart(fig_indkomst)
+st.plotly_chart(fig_indkomst, use_container_width=True)
 
 st.header("Share of people living in a low-income family")
 
@@ -437,7 +437,7 @@ annotations_low.append(dict(xref='paper', yref='paper', x=1.0, y=-0.15,
 fig_lavindkomst.update_layout(
   annotations=annotations_low)
 
-st.plotly_chart(fig_lavindkomst)
+st.plotly_chart(fig_lavindkomst, use_container_width=True)
 
 st.header("Municipalities with the largest share of their population living in a low-income family")
 
@@ -530,4 +530,4 @@ fig_top5.update_traces(
                  "Number of people: %{customdata[3]}</br>" +
                  "Income level: %{customdata[0]} % of median income"))
 
-st.plotly_chart(fig_top5)
+st.plotly_chart(fig_top5, use_container_width=True)
