@@ -277,7 +277,7 @@ fig_indkomst.update_layout(
         font_family='Arial'
     ),
     margin=dict(
-        l=0,
+        #l=0,
         t=10,
         b=70
     )
@@ -303,7 +303,7 @@ for dg, gruppe in df_g_indkomst_filtered.groupby("decile_group"):
                                   showarrow=False))
                               
 ## Add source
-annotations.append(dict(xref='paper', yref='paper', x=0.26, y=-0.11,
+annotations.append(dict(xref='paper', yref='paper', x=0.28, y=-0.11,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
