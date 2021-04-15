@@ -348,7 +348,8 @@ fig_lavindkomst = px.line(
   df_g_lavindkomst_filtered,
   x = "year",
   y = "p_lowincome",
-  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"]
+  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"],
+  height=300
   )
 
 ## Style line plot
@@ -409,7 +410,7 @@ fig_lavindkomst.update_traces(
 annotations_low = []
 
 # Add source
-annotations_low.append(dict(xref='paper', yref='paper', x=1.0, y=-0.1,
+annotations_low.append(dict(xref='paper', yref='paper', x=1.0, y=-0.15,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
@@ -454,7 +455,8 @@ fig_top5 = px.bar(
   y = 'municipality_name',
   text='p_lowincome',
   orientation = 'h',
-  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"]
+  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"],
+  height=300
 )
 
 fig_top5.update_traces(marker_color='rgb(39,112,214)')
