@@ -212,11 +212,18 @@ chosen_filter = df_kommuner_g_indkomst['municipality_name'] == municipality_cate
 
 df_g_indkomst_filtered = df_kommuner_g_indkomst[(chosen_filter)]
 
+color_scale = {'1. decile': 'rgb(196, 201, 242)', '2. decile': 'rgb(182, 188, 239)', 
+               '3. decile': 'rgb(167, 175, 235)', '4. decile': 'rgb(151, 163, 232)',
+               '5. decile': 'rgb(135, 151, 228)', '6. decile': 'rgb(118, 139, 225)',
+               '7. decile': 'rgb(100, 127, 221)', '8. decile': 'rgb(81, 118, 218)',
+               '9. decile': 'rgb(59, 108, 215)', '10. decile': 'rgb(10, 97, 211)'}
+
 fig_indkomst = px.line(
   df_g_indkomst_filtered,
   x = "year",
   y = "avg_income",
   color = "decile_group",
+  color_discrete_map=color_scale,
   custom_data=["decile_group", "year", "avg_income", "municipality_name"])
 
 # The same as above, but with the go method
@@ -277,7 +284,7 @@ fig_indkomst.update_layout(
         font_family='Arial'
     ),
     margin=dict(
-        #l=0,
+        l=0,
         t=10,
         b=70
     )
@@ -285,7 +292,7 @@ fig_indkomst.update_layout(
 
 ## Set line color and width, and set information in tooltip
 fig_indkomst.update_traces(
-  line=dict(color='rgb(39,112,214)', width=2),
+  line=dict(width=3),
   hovertemplate=("</br><b>%{customdata[3]}</b></br>" +
                 "Group: %{customdata[0]}<br>" +
                 "Year: %{customdata[1]}</br>" +
@@ -303,7 +310,7 @@ for dg, gruppe in df_g_indkomst_filtered.groupby("decile_group"):
                                   showarrow=False))
                               
 ## Add source
-annotations.append(dict(xref='paper', yref='paper', x=0.28, y=-0.11,
+annotations.append(dict(xref='paper', yref='paper', x=1.0, y=-0.11,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
@@ -403,7 +410,7 @@ fig_lavindkomst.update_traces(
 annotations_low = []
 
 # Add source
-annotations_low.append(dict(xref='paper', yref='paper', x=0.26, y=-0.15,
+annotations_low.append(dict(xref='paper', yref='paper', x=1.0, y=-0.15,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
@@ -487,7 +494,7 @@ fig_top5.update_layout(
 annotations_top5 = []
 
 ## Add source
-annotations_top5.append(dict(xref='paper', yref='paper', x=0.275, y=-0.05,
+annotations_top5.append(dict(xref='paper', yref='paper', x=1.0, y=-0.05,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
