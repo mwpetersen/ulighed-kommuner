@@ -285,8 +285,8 @@ fig_indkomst.update_layout(
     ),
     margin=dict(
         l=0,
-        t=10,
-        b=70
+        t=20,
+        #b=70
     )
 )
 
@@ -310,7 +310,7 @@ for dg, gruppe in df_g_indkomst_filtered.groupby("decile_group"):
                                   showarrow=False))
                               
 ## Add source
-annotations.append(dict(xref='paper', yref='paper', x=1.0, y=-0.11,
+annotations.append(dict(xref='paper', yref='paper', x=1.0, y=-0.1,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
@@ -348,8 +348,7 @@ fig_lavindkomst = px.line(
   df_g_lavindkomst_filtered,
   x = "year",
   y = "p_lowincome",
-  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"],
-  height=350
+  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"]
   )
 
 ## Style line plot
@@ -394,7 +393,7 @@ fig_lavindkomst.update_layout(
     ),
     margin=dict(
         l=0,
-        t=10
+        t=20
     )
 )
 
@@ -410,7 +409,7 @@ fig_lavindkomst.update_traces(
 annotations_low = []
 
 # Add source
-annotations_low.append(dict(xref='paper', yref='paper', x=1.0, y=-0.15,
+annotations_low.append(dict(xref='paper', yref='paper', x=1.0, y=-0.1,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
@@ -455,8 +454,7 @@ fig_top5 = px.bar(
   y = 'municipality_name',
   text='p_lowincome',
   orientation = 'h',
-  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"],
-  height=350
+  custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"]
 )
 
 fig_top5.update_traces(marker_color='rgb(39,112,214)')
@@ -477,7 +475,7 @@ fig_top5.update_layout(
         ),
     ),
     margin=dict(
-        t=10,
+        t=25,
         pad=10, # https://stackoverflow.com/questions/52391451/how-do-i-add-space-between-the-tick-labels-and-the-graph-in-plotly-python
         l=0
     ),
