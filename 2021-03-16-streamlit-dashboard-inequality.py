@@ -242,7 +242,6 @@ fig_indkomst.update_layout(
         showline=True,
         showgrid=False,
         showticklabels=True,
-        tickvals=x,
         range = [x_min,x_max],
         linecolor='rgb(204, 204, 204)',
         linewidth=2,
@@ -278,10 +277,9 @@ fig_indkomst.update_layout(
         font_family='Arial'
     ),
     margin=dict(
-        #l=0,
-        t=90,
-        b=50,
-        pad=1
+        l=0,
+        t=10,
+        b=70
     )
 )
 
@@ -303,26 +301,9 @@ for dg, gruppe in df_g_indkomst_filtered.groupby("decile_group"):
                                   font=dict(family='Arial',
                                             size=12),
                                   showarrow=False))
-
-## Add title and subtitle
-annotations.append(dict(xref='paper', yref='paper', x=0.0, y=1.15,
-                              xanchor='left', yanchor='bottom',
-                              text='Figure 1: Average disposable income, grouped by decile' ,
-                              font=dict(family='Arial',
-                                        size=18,
-                                        color='rgb(37,37,37)'),
-                              showarrow=False))
-
-annotations.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
-                              xanchor='left', yanchor='bottom',
-                              text='Income is in Danish kroner' ,
-                              font=dict(family='Arial',
-                                        size=14,
-                                        color='rgb(37,37,37)'),
-                              showarrow=False))
                               
 ## Add source
-annotations.append(dict(xref='paper', yref='paper', x=1.0, y=-0.1,
+annotations.append(dict(xref='paper', yref='paper', x=0.26, y=-0.11,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
@@ -333,9 +314,15 @@ annotations.append(dict(xref='paper', yref='paper', x=1.0, y=-0.1,
 fig_indkomst.update_layout(
   annotations=annotations)
 
+## Plot title
+st.subheader('Figure 1: Average disposable income, grouped by decile')
+
+st.markdown("""Income is in Danish kroner""")
+
 ## Show plot
 st.plotly_chart(fig_indkomst, use_container_width=True)
 
+# Share of people living in low-income families
 st.header("Share of people living in a low-income family")
 
 st.markdown("""
@@ -355,15 +342,15 @@ fig_lavindkomst = px.line(
   x = "year",
   y = "p_lowincome",
   custom_data=["income_level", "year", "p_lowincome", "n_lowincome", "municipality_name"],
-  height=400
+  height=350
   )
 
+## Style line plot
 fig_lavindkomst.update_layout(
     xaxis=dict(
         showline=True,
         showgrid=False,
         showticklabels=True,
-        tickvals=x,
         range = [x_min,x_max],
         linecolor='rgb(204, 204, 204)',
         linewidth=2,
@@ -399,9 +386,8 @@ fig_lavindkomst.update_layout(
         font_family='Arial'
     ),
     margin=dict(
-        #l=0,
-        t=60,
-        pad=1
+        l=0,
+        t=10
     )
 )
 
@@ -416,17 +402,8 @@ fig_lavindkomst.update_traces(
 
 annotations_low = []
 
-# Add title
-annotations_low.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
-                              xanchor='left', yanchor='bottom',
-                              text='Figure 2: Share of the population living in a low-income family',
-                              font=dict(family='Arial',
-                                        size=18,
-                                        color='rgb(37,37,37)'),
-                              showarrow=False))
-
 # Add source
-annotations_low.append(dict(xref='paper', yref='paper', x=1.0, y=-0.15,
+annotations_low.append(dict(xref='paper', yref='paper', x=0.26, y=-0.15,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
@@ -437,8 +414,12 @@ annotations_low.append(dict(xref='paper', yref='paper', x=1.0, y=-0.15,
 fig_lavindkomst.update_layout(
   annotations=annotations_low)
 
+## Plot title
+st.subheader('Figure 2: Share of the population living in a low-income family')
+
 st.plotly_chart(fig_lavindkomst, use_container_width=True)
 
+# Share of the population living in a low-income family
 st.header("Municipalities with the largest share of their population living in a low-income family")
 
 st.markdown("""
@@ -452,6 +433,7 @@ Use the slider below to choose the year for which data is shown.
 max_year = int(df_kommuner_g_lavindkomst['year'].max())
 min_year = int(df_kommuner_g_lavindkomst['year'].min())
 
+## Slider to choose year
 year_filter = st.slider('Choose year:', min_year, max_year, max_year)
 
 lavindkomst_top5 = (df_kommuner_g_lavindkomst
@@ -459,6 +441,7 @@ lavindkomst_top5 = (df_kommuner_g_lavindkomst
   .nlargest(5, 'p_lowincome', keep = 'all')
 )
 
+## Create horizontal bar plot
 fig_top5 = px.bar(
   lavindkomst_top5,
   x = 'p_lowincome',
@@ -471,6 +454,7 @@ fig_top5 = px.bar(
 
 fig_top5.update_traces(marker_color='rgb(39,112,214)')
 
+## Style bar blot
 fig_top5.update_layout(
     xaxis=dict(
         showline=False,
@@ -486,8 +470,9 @@ fig_top5.update_layout(
         ),
     ),
     margin=dict(
-        t=60,
-        pad=10 # https://stackoverflow.com/questions/52391451/how-do-i-add-space-between-the-tick-labels-and-the-graph-in-plotly-python
+        t=10,
+        pad=10, # https://stackoverflow.com/questions/52391451/how-do-i-add-space-between-the-tick-labels-and-the-graph-in-plotly-python
+        l=0
     ),
     xaxis_title=None,
     yaxis_title=None,
@@ -501,17 +486,8 @@ fig_top5.update_layout(
 
 annotations_top5 = []
 
-# Add title
-annotations_top5.append(dict(xref='paper', yref='paper', x=0.0, y=1.05,
-                              xanchor='left', yanchor='bottom',
-                              text='Figure 3: Municipalities with largest share living in a low-income family',
-                              font=dict(family='Arial',
-                                        size=18,
-                                        color='rgb(37,37,37)'),
-                              showarrow=False))
-
-# Add source
-annotations_top5.append(dict(xref='paper', yref='paper', x=1.0, y=-0.05,
+## Add source
+annotations_top5.append(dict(xref='paper', yref='paper', x=0.275, y=-0.05,
                               xanchor='right', yanchor='top',
                               text='Source: Statistics Denmark',
                               font=dict(family='Arial',
@@ -529,5 +505,8 @@ fig_top5.update_traces(
                  "Share of population: %{customdata[2]} %</br>" +
                  "Number of people: %{customdata[3]}</br>" +
                  "Income level: %{customdata[0]} % of median income"))
+
+## Plot title
+st.subheader('Figure 3: Municipalities with largest share living in a low-income family')
 
 st.plotly_chart(fig_top5, use_container_width=True)
