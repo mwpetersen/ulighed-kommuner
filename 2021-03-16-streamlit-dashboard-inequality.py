@@ -285,8 +285,7 @@ fig_indkomst.update_layout(
     ),
     margin=dict(
         l=0,
-        t=20,
-        #b=70
+        t=0
     )
 )
 
@@ -326,8 +325,10 @@ st.subheader('Figure 1: Average disposable income, grouped by decile')
 
 st.markdown("""Income is in Danish kroner""")
 
+config = {'displayModeBar': False}
+
 ## Show plot
-st.plotly_chart(fig_indkomst, use_container_width=True)
+st.plotly_chart(fig_indkomst, use_container_width=True, config=config)
 
 # Share of people living in low-income families
 st.header("Share of people living in a low-income family")
@@ -394,7 +395,7 @@ fig_lavindkomst.update_layout(
     ),
     margin=dict(
         l=0,
-        t=20
+        t=0
     )
 )
 
@@ -424,7 +425,7 @@ fig_lavindkomst.update_layout(
 ## Plot title
 st.subheader('Figure 2: Share of the population living in a low-income family')
 
-st.plotly_chart(fig_lavindkomst, use_container_width=True)
+st.plotly_chart(fig_lavindkomst, use_container_width=True, config=config)
 
 # Share of the population living in a low-income family
 st.header("Municipalities with the largest share of their population living in a low-income family")
@@ -477,7 +478,7 @@ fig_top5.update_layout(
         ),
     ),
     margin=dict(
-        t=25,
+        t=0,
         pad=10, # https://stackoverflow.com/questions/52391451/how-do-i-add-space-between-the-tick-labels-and-the-graph-in-plotly-python
         l=0
     ),
@@ -516,4 +517,4 @@ fig_top5.update_traces(
 ## Plot title
 st.subheader('Figure 3: Municipalities with largest share living in a low-income family')
 
-st.plotly_chart(fig_top5, use_container_width=True)
+st.plotly_chart(fig_top5, use_container_width=True, config=config)
