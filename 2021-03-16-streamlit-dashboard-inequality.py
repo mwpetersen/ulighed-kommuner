@@ -325,7 +325,8 @@ st.subheader('Figure 1: Average disposable income, grouped by decile')
 
 st.markdown("""Income is in Danish kroner""")
 
-config = {'displayModeBar': False}
+# Remove modebar from plot
+config = {'displayModeBar': False} 
 
 ## Show plot
 st.plotly_chart(fig_indkomst, use_container_width=True, config=config)
