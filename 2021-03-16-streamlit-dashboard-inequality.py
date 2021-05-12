@@ -250,7 +250,6 @@ fig_indkomst.update_layout(
         showgrid=False,
         showticklabels=True,
         range = [x_min,x_max],
-        fixedrange=True,
         linecolor='rgb(204, 204, 204)',
         linewidth=2,
         ticks='outside',
@@ -264,7 +263,6 @@ fig_indkomst.update_layout(
         showline=True,
         showgrid=False,
         showticklabels=True,
-        fixedrange=True,
         tickformat=',.d',
         linecolor='rgb(204, 204, 204)',
         linewidth=2,
@@ -278,6 +276,7 @@ fig_indkomst.update_layout(
     showlegend=False,
     xaxis_title=None,
     yaxis_title=None,
+    dragmode=False,
     plot_bgcolor='white',
     separators=",.",
     hoverlabel=dict(
