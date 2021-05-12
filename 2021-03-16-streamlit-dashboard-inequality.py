@@ -389,6 +389,7 @@ fig_lavindkomst.update_layout(
     ),
     xaxis_title=None,
     yaxis_title=None,
+    dragmode=False,
     plot_bgcolor='white',
     hoverlabel=dict(
         bgcolor="white",
@@ -486,6 +487,7 @@ fig_top5.update_layout(
     ),
     xaxis_title=None,
     yaxis_title=None,
+    dragmode=False,
     plot_bgcolor='white',
     hoverlabel=dict(
         bgcolor="white",
