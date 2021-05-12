@@ -190,7 +190,7 @@ low-income families in each municipality in Denmark.
 """)
 
 # Create drop down box where the user can select municipality
-municipalities = df_kommuner_g_indkomst['municipality_name'].drop_duplicates().tolist()
+municipalities = df_kommuner_g_indkomst['municipality_name'].drop_duplicates().sort_values().tolist()
 
 municipality_category = st.selectbox(
     'Choose municipality:', 
@@ -326,7 +326,7 @@ st.subheader('Figure 1: Average disposable income, grouped by decile')
 st.markdown("""Income is in Danish kroner""")
 
 # Remove modebar from plot
-config = {'displayModeBar': False} 
+config = {'displayModeBar': False, 'scrollZoom': False}
 
 ## Show plot
 st.plotly_chart(fig_indkomst, use_container_width=True, config=config)
